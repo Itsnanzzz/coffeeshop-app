@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="coffee-gradient text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold">☕ Coffee Shop</h1>
+                    <p class="text-coffee-200">Menu & Pemesanan</p>
+                </div>
+                <div class="relative">
+                    <button onclick="toggleCart()" class="bg-white text-coffee-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition flex items-center space-x-2">
+                        <span>🛒 Keranjang</span>
+                        <span class="cart-badge cart-count hidden">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Categories -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Menu Kami</h2>
+            
+            <% for (const category in groupedProducts) { %>
+            <div class="mb-12">
+                <h3 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2"><%= category %></h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <% groupedProducts[category].forEach(product => { %>
+                    <div class="product-card bg-white rounded-lg shadow-md overflow-hidden" data-product-id="<%= product.id %>" data-name="<%= product.name %>" data-price="<%= product.price %>" data-image="<%= product.image_url %>">
+                        <img src="<%= product.image_url || '/images/placeholder.jpg' %>" alt="<%= product.name %>" class="w-full h-48 object-cover">
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-semibold text-lg"><%= product.name %></h4>
+                                <span class="text-coffee-600 font-bold">Rp <%= product.price.toLocaleString() %></span>
+                            </div>
+                            <p class="text-gray-600 text-sm mb-4"><%= product.description %></p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-500">Stok: <%= product.stock %></span>
+                                <button class="add-to-cart bg-coffee-600 text-white px-4 py-2 rounded-lg hover:bg-coffee-700 transition">
+                                    Tambah
+                                </button>
+                            </div>
+                            <div class="mt-3">
+                                <textarea id="notes-<%= product.id %>" placeholder="Catatan (opsional)" class="w-full border rounded p-2 text-sm" rows="2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <% }); %>
+                </div>
+            </div>
+            <% } %>
+        </div>
+    </main>
+
+    <!-- Cart Modal -->
+    <div id="cartModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-xl">
+            <div class="p-6 h-full flex flex-col">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold">Keranjang Belanja</h2>
+                    <button onclick="toggleCart()" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto">
+                    <div id="cartEmpty" class="hidden text-center py-8">
+                        <p class="text-gray-500">Keranjang Anda kosong</p>
+                    </div>
+                    <div id="cartNotEmpty" class="hidden">
+                        <div id="cartItems"></div>
+                    </div>
+                </div>
+                
+                <div class="border-t pt-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="font-semibold">Total:</span>
+                        <span class="font-bold text-lg">Rp <span id="cartTotal">0</span></span>
+                    </div>
+                    <div class="space-y-2">
+                        <button onclick="proceedToCheckout()" class="w-full bg-coffee-600 text-white py-3 rounded-lg font-semibold hover:bg-coffee-700 transition">
+                            Lanjut ke Checkout
+                        </button>
+                        <button onclick="cart.clear()" class="w-full bg-gray-200 text-gray-700 py-2 rounded-lg font-semibold hover:bg-gray-300 transition">
+                            Kosongkan Keranjang
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/cart.js"></script>
+    <script src="/js/notifications.js"></script>
+    
+    <script>
+        function toggleCart() {
+            const modal = document.getElementById('cartModal');
+            modal.classList.toggle('hidden');
+        }
+
+        function proceedToCheckout() {
+            if (cart.items.length === 0) {
+                alert('Keranjang Anda kosong');
+                return;
+            }
+            window.location.href = '/checkout';
+        }
+
+        // Close cart when clicking outside
+        document.getElementById('cartModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                toggleCart();
+            }
+        });
+    </script>
+</body>
+</html>
